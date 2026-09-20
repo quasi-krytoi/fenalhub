@@ -1027,3 +1027,197 @@ T18:Button({Title="Load Keybinds", Callback=function()
         end
     end
 end})
+    -- LOOPS
+    RunService.RenderStepped:Connect(function(dt)
+        if S.fly then
+            local c=LP.Character
+            local r=c and c:FindFirstChild("HumanoidRootPart")
+            local h=c and c:FindFirstChildOfClass("Humanoid")
+            if r and h then
+                h.PlatformStand=true
+                local mv=Vector3.zero
+                if UIS:IsKeyDown(Enum.KeyCode.W) then mv += CAM.CFrame.LookVector end
+                if UIS:IsKeyDown(Enum.KeyCode.S) then mv -= CAM.CFrame.LookVector end
+                if UIS:IsKeyDown(Enum.KeyCode.A) then mv -= CAM.CFrame.RightVector end
+                if UIS:IsKeyDown(Enum.KeyCode.D) then mv += CAM.CFrame.RightVector end
+                if UIS:IsKeyDown(Enum.KeyCode.Space) then mv += Vector3.new(0,1,0) end
+                if UIS:IsKeyDown(Enum.KeyCode.LeftControl) then mv -= Vector3.new(0,1,0) end
+                if mv.Magnitude > 0 then r.CFrame = r.CFrame + mv.Unit * S.flySpeed * dt end
+                r.Velocity=Vector3.zero
+            end
+        end
+    end)
+
+    RunService.Stepped:Connect(function()
+        if S.noclip and LP.Character then
+            for _,p in ipairs(LP.Character:GetDescendants()) do
+                if p:IsA("BasePart") and p.CanCollide then p.CanCollide=false end
+            end
+        end
+    end)
+
+    RunService.RenderStepped:Connect(function()
+        if S.spin then
+            local r=LP.Character and LP.Character:FindFirstChild("HumanoidRootPart")
+            if r then r.CFrame = r.CFrame * CFrame.Angles(0, math.rad(S.spinSpeed), 0) end
+        end
+    end)
+
+    RunService.Heartbeat:Connect(function(dt)
+        if S.tpWalk then
+            local h=LP.Character and LP.Character:FindFirstChildOfClass("Humanoid")
+            local r=LP.Character and LP.Character:FindFirstChild("HumanoidRootPart")
+            if h and r and h.MoveDirection.Magnitude > 0 then
+                r.CFrame = r.CFrame + h.MoveDirection * S.tpWalkSpeed * dt
+            end
+        end
+    end)
+
+    RunService.Heartbeat:Connect(function()
+        if S.antiVoid then
+            local r=LP.Character and LP.Character:FindFirstChild("HumanoidRootPart")
+            if r and r.Position.Y < -50 then r.CFrame = CFrame.new(r.Position.X, 100, r.Position.Z) end
+        end
+        if S.lockY then
+            local r=LP.Character and LP.Character:FindFirstChild("HumanoidRootPart")
+            if r then r.CFrame = CFrame.new(r.Position.X, S.lockYVal, r.Position.Z) end
+        end
+        if S.freeze then
+            local r=LP.Character and LP.Character:FindFirstChild("HumanoidRootPart")
+            if r and S.saveCframe then r.CFrame = S.saveCframe end
+        end
+        if S.autoJump then
+            local h=LP.Character and LP.Character:FindFirstChildOfClass("Humanoid")
+            if h and h.FloorMaterial ~= Enum.Material.Air then
+                h:ChangeState(Enum.HumanoidStateType.Jumping)
+            end
+        end
+        if S.killAura then
+            local myR=LP.Character and LP.Character:FindFirstChild("HumanoidRootPart")
+            if myR then
+                for _,plr in ipairs(Players:GetPlayers()) do
+                    if plr~=LP and plr.Character then
+                        local r2=plr.Character:FindFirstChild("HumanoidRootPart")
+                        local h=plr.Character:FindFirstChildOfClass("Humanoid")
+                        if r2 and h and (r2.Position-myR.Position).Magnitude < 10 then
+                            h.Health=0
+                            S.kills = S.kills + 1
+                        end
+                    end
+                end
+            end
+        end
+    end)
+
+    RunService.RenderStepped:Connect(function()
+        if S.aimbot then
+            local myR=LP.Character and LP.Character:FindFirstChild("HumanoidRootPart")
+            if not myR then return end
+            local closest, closestDist = nil, S.aimFov
+            for _,p in ipairs(Players:GetPlayers()) do
+                if p~=LP and p.Character then
+                    local r=p.Character:FindFirstChild("HumanoidRootPart")
+                    local h=p.Character:FindFirstChildOfClass("Humanoid")
+                    if r and h and h.Health > 0 then
+                        if S.teamCheck and p.Team == LP.Team then continue end
+                        local sc = CAM:WorldToViewportPoint(r.Position)
+                        if sc.Z > 0 then
+                            local d = (Vector2.new(sc.X, sc.Y) - Vector2.new(CAM.ViewportSize.X/2, CAM.ViewportSize.Y/2)).Magnitude
+                            if d < closestDist then closest, closestDist = r, d end
+                        end
+                    end
+                end
+            end
+            if closest then
+                local predPos = closest.Position + closest.Velocity * 0.15
+                CAM.CFrame = CFrame.new(CAM.CFrame.Position, predPos)
+            end
+        end
+    end)
+
+    task.spawn(function()
+        while true do
+            task.wait(0.3)
+            if S.autoFarmMM2 then
+                local myR = LP.Character and LP.Character:FindFirstChild("HumanoidRootPart")
+                local h = LP.Character and LP.Character:FindFirstChildOfClass("Humanoid")
+                if myR and h then
+                    local closest, dist = nil, math.huge
+                    for _, obj in ipairs(Workspace:GetDescendants()) do
+                        if obj:IsA("BasePart") and (obj.Name:lower():find("coin") or obj.Name:lower():find("coin")) then
+                            local d = (obj.Position - myR.Position).Magnitude
+                            if d < dist then closest, dist = obj, d end
+                        end
+                    end
+                    if closest then
+                        h:MoveTo(closest.Position)
+                        S.coinsCollected = S.coinsCollected + 1
+                    else
+                        local angle = tick() * 1.5
+                        local r = 30
+                        h:MoveTo(Vector3.new(math.sin(angle)*r, myR.Position.Y, math.cos(angle)*r))
+                    end
+                end
+            end
+        end
+    end)
+
+    task.spawn(function()
+        while true do
+            task.wait(S.chatDelay or 5)
+            if S.chatSpam then
+                local evt = game:GetService("ReplicatedStorage"):FindFirstChild("DefaultChatSystemChatEvents")
+                if evt and evt:FindFirstChild("SayMessageRequest") then
+                    evt.SayMessageRequest:FireServer(S.chatMsg or "FENALHUB", "All")
+                end
+            end
+        end
+    end)
+
+    LP.Idled:Connect(function()
+        if S.antiAFK then
+            local vu=game:GetService("VirtualUser")
+            vu:CaptureController(); vu:ClickButton2(Vector2.new())
+        end
+    end)
+
+    UIS.JumpRequest:Connect(function()
+        if S.infJump and LP.Character then
+            local h=LP.Character:FindFirstChildOfClass("Humanoid")
+            if h then h:ChangeState(Enum.HumanoidStateType.Jumping) end
+        end
+    end)
+
+    UIS.InputBegan:Connect(function(i, g)
+        if g or not S.clickTP then return end
+        if i.UserInputType == Enum.UserInputType.MouseButton1
+            or i.UserInputType == Enum.UserInputType.Touch then
+            local ur = CAM:ViewportPointToRay(i.Position.X, i.Position.Y)
+            local pr = RaycastParams.new()
+            pr.FilterType = Enum.RaycastFilterType.Exclude
+            pr.FilterDescendantsInstances = {LP.Character}
+            local res = Workspace:Raycast(ur.Origin, ur.Direction * 5000, pr)
+            if res then
+                local r=LP.Character and LP.Character:FindFirstChild("HumanoidRootPart")
+                if r then r.CFrame = CFrame.new(res.Position + Vector3.new(0,3,0)) end
+            end
+        end
+    end)
+
+    print("[TWKS] MEGA menu built")
+end
+
+kbtn.MouseButton1Click:Connect(function()
+    if kbox.Text == USER_KEY then
+        kstt.TextColor3 = Color3.fromRGB(0,255,180)
+        kstt.Text = "OK"
+        task.wait(0.3)
+        kg:Destroy()
+        BUILD()
+    else
+        kstt.TextColor3 = Color3.fromRGB(255,80,80)
+        kstt.Text = "неверный ключ"
+    end
+end)
+
+print("[TWKS] READY | key:", USER_KEY)
