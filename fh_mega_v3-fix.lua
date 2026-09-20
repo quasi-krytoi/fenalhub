@@ -825,7 +825,9 @@ T15:Toggle({Title="Voice Announce (Join)", Default=false, Callback=function(v)
         snd.Volume = 1; snd:Play()
         task.delay(2, function() snd:Destroy() end)
     end
-end})d.Name-- AUTO TAB
+end)
+
+-- AUTO TAB
 local T16 = Window:Tab({Title="Auto", Icon="cpu"})
 T16:Paragraph({Title="Universal Auto", Desc="Универсальные авто-функции"})
 
