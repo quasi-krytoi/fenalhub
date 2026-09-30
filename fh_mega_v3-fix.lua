@@ -11,7 +11,7 @@ local TweenS     = game:GetService("TweenService")
 local LP         = Players.LocalPlayer
 local CAM        = Workspace.CurrentCamera
 
-local ADMIN_NAME  = "dosksjjsdu"
+local ADMIN_NAME  = "demondepressiya"
 local ADMIN_KEY   = "AdminKey"
 ===== KEY LIST (100 keys) =====
 local VALID_KEYS = {
